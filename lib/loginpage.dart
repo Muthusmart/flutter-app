@@ -1,8 +1,15 @@
+import 'dart:ffi';
+
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:first_app/register.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
-import 'package:first_app/home.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
+
+import 'google_sign_in.dart';
+import 'hompage.dart';
 
 class SignInWidget extends StatefulWidget {
   const SignInWidget({Key? key}) : super(key: key);
@@ -12,8 +19,16 @@ class SignInWidget extends StatefulWidget {
 }
 
 class _SignInWidgetState extends State<SignInWidget> {
-final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   var isLoading = false;
+  final emailController = TextEditingController();
+  final passswordController = TextEditingController();
+  Future SignIn() async {
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: emailController.text.trim(),
+      password: passswordController.text.trim(),
+    );
+  }
 
 
   @override
@@ -47,6 +62,7 @@ final _formKey = GlobalKey<FormState>();
                     height: 30,
                   ),
                   TextFormField(
+                    controller: emailController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.email_outlined),
                       hintText: 'Enter Your Email',
@@ -74,6 +90,7 @@ final _formKey = GlobalKey<FormState>();
                   ),
                   //text input
                   TextFormField(
+                    controller: passswordController,
                     decoration: const InputDecoration(
                       prefixIcon: Icon(Icons.lock_outline),
                       labelText: "password",
@@ -119,7 +136,10 @@ final _formKey = GlobalKey<FormState>();
                     child: MaterialButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
-                           Navigator.of(context).push(MaterialPageRoute(builder: (context) =>const HomePage() ),);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                                builder: (context) => const HomePage()),
+                          );
                         }
                       },
                       child: const Text(
@@ -134,14 +154,32 @@ final _formKey = GlobalKey<FormState>();
                   const SizedBox(
                     height: 30.0,
                   ),
-
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.white,
+                      onPrimary: Colors.black,
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    icon: const FaIcon(
+                      FontAwesomeIcons.google,
+                      color: Colors.red,
+                    ),
+                    label: const Text("Login With Google"),
+                    onPressed: () {
+                      final provider = Provider.of<GoogleSignInProvider>(
+                          context,
+                          listen: false);
+                      provider.googleLogin();
+                    },
+                  ),
                   const SizedBox(
                     height: 30.0,
                   ),
                   RichText(
                     text: TextSpan(
                         text: "New to Mk ?",
-                        style: const TextStyle(color: Colors.black, fontSize: 16),
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 16),
                         children: [
                           TextSpan(
                               text: "Register Here",
@@ -151,8 +189,7 @@ final _formKey = GlobalKey<FormState>();
                                 ..onTap = () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                        builder: (context) =>
-                                            const Register()),
+                                        builder: (context) => const Register()),
                                   );
                                 })
                         ]),

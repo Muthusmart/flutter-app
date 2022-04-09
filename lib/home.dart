@@ -1,25 +1,27 @@
 // ignore_for_file: constant_identifier_names
 
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:first_app/google_sign_in.dart';
 import 'package:first_app/loginpage.dart';
 import 'package:first_app/settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 import 'aboutus.dart';
 import 'settings.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class Home extends StatefulWidget {
+  const Home({Key? key}) : super(key: key);
 
   @override
-  _HomePageState createState() => _HomePageState();
+  _HomeState createState() => _HomeState();
 }
 
 enum Weekend { Saturday, Sunday }
 
-class _HomePageState extends State<HomePage> {
+class _HomeState extends State<Home> {
   int _selectedIndex = 0;
   bool isCheck1 = false;
   bool isCheck2 = false;
@@ -98,7 +100,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   double rate = 0;
- 
+  final user = FirebaseAuth.instance.currentUser!;
   @override
   Widget build(BuildContext context) => WillPopScope(
         onWillPop: () async {
@@ -111,14 +113,25 @@ class _HomePageState extends State<HomePage> {
           appBar: AppBar(
             title: const Text("MK"),
             centerTitle: true,
-            toolbarHeight: 30,
+            toolbarHeight: 46,
             backgroundColor: Colors.greenAccent,
+            actions: [
+              TextButton(
+                child: Text("Log Out" ,style: TextStyle(fontSize: 20,fontWeight:FontWeight.w700,color: Colors.white),),
+                onPressed: () {
+                  final provider =
+                      Provider.of<GoogleSignInProvider>(context, listen: false);
+                  provider.logout();
+                },
+              ),
+            ],
           ),
           bottomNavigationBar: BottomNavigationBar(
             items: const [
               BottomNavigationBarItem(
                   icon: Icon(Icons.home),
                   label: "home",
+                  
                   backgroundColor: Colors.greenAccent),
               BottomNavigationBarItem(
                 icon: Icon(Icons.group),
@@ -164,7 +177,6 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(
                     height: 40,
                   ),
-                
                   const SizedBox(
                     height: 40,
                   ),
@@ -500,7 +512,7 @@ class _HomePageState extends State<HomePage> {
 
 void _navigateToHome(BuildContext context) {
   Navigator.of(context)
-      .push(MaterialPageRoute(builder: (context) => const HomePage()));
+      .push(MaterialPageRoute(builder: (context) => const Home()));
 }
 
 void _navigateToaboutus(BuildContext context) {
