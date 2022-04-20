@@ -101,6 +101,9 @@ class _HomeState extends State<Home> {
 
   double rate = 0;
   final user = FirebaseAuth.instance.currentUser!;
+  // final audioPlayer = AudioPlayer();
+  
+
   @override
   Widget build(BuildContext context) => WillPopScope(
         onWillPop: () async {
@@ -117,7 +120,13 @@ class _HomeState extends State<Home> {
             backgroundColor: Colors.greenAccent,
             actions: [
               TextButton(
-                child: Text("Log Out" ,style: TextStyle(fontSize: 20,fontWeight:FontWeight.w700,color: Colors.white),),
+                child: Text(
+                  "Log Out",
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white),
+                ),
                 onPressed: () {
                   final provider =
                       Provider.of<GoogleSignInProvider>(context, listen: false);
@@ -127,11 +136,11 @@ class _HomeState extends State<Home> {
             ],
           ),
           bottomNavigationBar: BottomNavigationBar(
+            type: BottomNavigationBarType.shifting,
             items: const [
               BottomNavigationBarItem(
                   icon: Icon(Icons.home),
                   label: "home",
-                  
                   backgroundColor: Colors.greenAccent),
               BottomNavigationBarItem(
                 icon: Icon(Icons.group),

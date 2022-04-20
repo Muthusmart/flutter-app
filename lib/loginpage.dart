@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:provider/provider.dart';
-
+import 'package:first_app/ForgetPasswordPage';
 import 'google_sign_in.dart';
 import 'hompage.dart';
 
@@ -117,13 +117,20 @@ class _SignInWidgetState extends State<SignInWidget> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      MaterialButton(
-                          onPressed: () {},
-                          child: const Text("Forget Password ?")),
+                     GestureDetector(
+                             child: Text("Forget Password ?",style: TextStyle(decoration: TextDecoration.underline,
+              color: Colors.redAccent,
+              fontSize: 20,
+              
+              ),),
+          onTap: ()=>Navigator.of(context).push(MaterialPageRoute(builder:(context)=> ForgetPasswordPage(),
+          )),
+
+                     ),
                     ],
                   ),
-                  const SizedBox(
-                    height: 5.0,
+               SizedBox(
+                    height: 20.0,
                   ),
                   Container(
                     height: 60,
