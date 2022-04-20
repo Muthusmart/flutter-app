@@ -1,16 +1,19 @@
 // ignore_for_file: constant_identifier_names
 
+import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:first_app/ProfilePage.dart';
 import 'package:first_app/google_sign_in.dart';
 import 'package:first_app/loginpage.dart';
 import 'package:first_app/settings.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 import 'aboutus.dart';
 import 'settings.dart';
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -101,8 +104,65 @@ class _HomeState extends State<Home> {
 
   double rate = 0;
   final user = FirebaseAuth.instance.currentUser!;
-  // final audioPlayer = AudioPlayer();
-  
+  final audioPlayer = AudioPlayer();
+  bool isPlaying = false;
+
+  Duration duration = Duration.zero;
+  Duration position = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    setAudio();
+    audioPlayer.onPlayerStateChanged.listen((State) {
+      setState(() {
+        isPlaying = State == PlayerState.PLAYING;
+      });
+    });
+    audioPlayer.onDurationChanged.listen((newDuration) {
+      setState(() {
+        duration = newDuration;
+      });
+    });
+    audioPlayer.onDurationChanged.listen((newPosition) {
+      setState(() {
+        duration = newPosition;
+      });
+    });
+  }
+
+  Future setAudio() async {
+    audioPlayer.setReleaseMode(ReleaseMode.LOOP);
+
+    String url =
+        "https://wynk.in/music/song/agilam-nee-from-kgf-chapter-2/hu_85418734";
+    // final player = AudioCache(prefix: "assets/");
+    // final url = await player.load("song.mp3");
+    audioPlayer.setUrl(url);
+  }
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
+  }
+
+  String formatTime(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    final hours = twoDigits(duration.inHours);
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return [
+      if (duration.inHours > 0) hours,
+      minutes,
+      seconds,
+    ].join(":");
+  }
+
+  final controllerName = TextEditingController();
+  final controllerAge = TextEditingController();
+  final controllerDate = TextEditingController();
+   
 
   @override
   Widget build(BuildContext context) => WillPopScope(
@@ -141,6 +201,7 @@ class _HomeState extends State<Home> {
               BottomNavigationBarItem(
                   icon: Icon(Icons.home),
                   label: "home",
+                  
                   backgroundColor: Colors.greenAccent),
               BottomNavigationBarItem(
                 icon: Icon(Icons.group),
@@ -441,6 +502,69 @@ class _HomeState extends State<Home> {
                       label: "$rate",
                     ),
                   ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.network(
+                          "https://i.pinimg.com/736x/ee/12/9e/ee129e012d739294559061765f89319a.jpg",
+                          width: double.infinity,
+                          height: 350,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      SizedBox(height: 30),
+                      Text(
+                        "KGF MOTHER SONG",
+                        style: TextStyle(
+                            fontSize: 24, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(height: 5),
+                      Text(
+                        "Agilam Nee",
+                        style: TextStyle(fontSize: 20),
+                      ),
+                      Slider(
+                        min: 0,
+                        max: duration.inSeconds.toDouble(),
+                        value: position.inSeconds.toDouble(),
+                        onChanged: (value) async {
+                          final position = Duration(seconds: value.toInt());
+                          await audioPlayer.seek(position);
+                          await audioPlayer.resume();
+                        },
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(formatTime(position)),
+                            Text(formatTime(duration - position)),
+                          ],
+                        ),
+                      ),
+                      CircleAvatar(
+                        radius: 30,
+                        child: IconButton(
+                          icon: Icon(
+                            isPlaying ? Icons.pause : Icons.play_arrow,
+                          ),
+                          iconSize: 40,
+                          onPressed: () async {
+                            if (isPlaying) {
+                              await audioPlayer.pause();
+                            } else {
+                              String url =
+                                  "https://wynk.in/music/song/agilam-nee-from-kgf-chapter-2/hu_85418734";
+                              await audioPlayer.play(url);
+                            }
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -449,12 +573,19 @@ class _HomeState extends State<Home> {
             elevation: 16,
             child: Column(
               children: <Widget>[
-                const UserAccountsDrawerHeader(
+                UserAccountsDrawerHeader(
                   accountName: Text("Muthu"),
                   accountEmail: Text("Muthudevil755@gmail.com"),
                   currentAccountPicture: CircleAvatar(
                     backgroundColor: Colors.white,
-                    child: Text("MK"),
+                    child:IconButton(
+                    icon:Icon(Icons.person), 
+                    onPressed: () { _navigateToProfilePage(context);},
+                  
+                    
+                    ),
+
+                    
                   ),
                   otherAccountsPictures: [
                     CircleAvatar(
@@ -517,6 +648,7 @@ class _HomeState extends State<Home> {
           ),
         ),
       );
+ 
 }
 
 void _navigateToHome(BuildContext context) {
@@ -526,7 +658,7 @@ void _navigateToHome(BuildContext context) {
 
 void _navigateToaboutus(BuildContext context) {
   Navigator.of(context)
-      .push(MaterialPageRoute(builder: (context) => const About()));
+      .push(MaterialPageRoute(builder: (context) => const AboutPage()));
 }
 
 void _navigateTologinpage(BuildContext context) {
@@ -536,5 +668,10 @@ void _navigateTologinpage(BuildContext context) {
 
 void _navigateTosettings(BuildContext context) {
   Navigator.of(context)
-      .push(MaterialPageRoute(builder: (context) => const SettingsPage()));
+      .push(MaterialPageRoute(builder: (context) => const settingsPage()));
+}
+
+void _navigateToProfilePage(BuildContext context) {
+  Navigator.of(context)
+      .push(MaterialPageRoute(builder: (context) => const ProfilePage()));
 }
